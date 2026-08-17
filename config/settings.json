@@ -1,0 +1,11 @@
+{
+  "_comment": "Runtime knobs for the news agent. Safe to tune without touching scripts.",
+  "lookback_hours": 30,
+  "max_candidates": 20,
+  "articles_per_run": 4,
+  "wp_post_status": "draft",
+  "default_category": "News",
+  "state_file": "state/posted.json",
+  "posted_history_limit": 1000,
+  "user_agent": "PlumeGamingNewsAgent/1.0 (+https://plumegaming.com)"
+}

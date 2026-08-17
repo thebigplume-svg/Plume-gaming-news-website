@@ -1,0 +1,15 @@
+{
+  "_comment": "RSS/Atom feeds the agent pulls gaming news from. Add/remove freely — name is shown as the attributed source.",
+  "sources": [
+    { "name": "IGN", "url": "https://feeds.ign.com/ign/games-all", "default_category": "News" },
+    { "name": "Polygon", "url": "https://www.polygon.com/rss/index.xml", "default_category": "News" },
+    { "name": "Kotaku", "url": "https://kotaku.com/rss", "default_category": "News" },
+    { "name": "PC Gamer", "url": "https://www.pcgamer.com/rss/", "default_category": "PC" },
+    { "name": "Eurogamer", "url": "https://www.eurogamer.net/feed", "default_category": "News" },
+    { "name": "GameSpot", "url": "https://www.gamespot.com/feeds/game-news/", "default_category": "News" },
+    { "name": "Rock Paper Shotgun", "url": "https://www.rockpapershotgun.com/feed", "default_category": "PC" },
+    { "name": "VG247", "url": "https://www.vg247.com/feed", "default_category": "News" },
+    { "name": "Game Rant", "url": "https://gamerant.com/feed/", "default_category": "News" },
+    { "name": "Destructoid", "url": "https://www.destructoid.com/feed/", "default_category": "News" }
+  ]
+}
