@@ -4,56 +4,59 @@
   --bg: #f6f2e9;
   --bg-tint: #efe9db;
   --surface: #fffdf8;
-  --ink: #1c1730;
-  --ink-soft: #55506d;
-  --ink-faint: #8b85a3;
-  --accent: #4a2fd1;
-  --accent-2: #7d5cff;
-  --accent-soft: #ece6ff;
+  --ink: #171a2e;
+  --ink-soft: #4e5270;
+  --ink-faint: #8b8fa8;
+  --accent: #c2650a;
+  --accent-2: #f5a300;
+  --accent-soft: #fbe7c7;
   --line: #e3dcc9;
-  --warn: #a1650c;
-  --warn-soft: #f7e9d2;
+  --warn: #8a6d1f;
+  --warn-soft: #f2ecd3;
   --good: #276a49;
   --good-soft: #dcefe3;
   --shadow: 28 22 10 / 0.08;
+  --brand-navy: #22318f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #131022;
-    --bg-tint: #1a1630;
-    --surface: #1c1832;
-    --ink: #f3f0ff;
-    --ink-soft: #b6aed9;
-    --ink-faint: #8177a8;
-    --accent: #9c86ff;
-    --accent-2: #b7a6ff;
-    --accent-soft: #2a2350;
-    --line: #2e2850;
-    --warn: #e3ac52;
-    --warn-soft: #362a1c;
+    --bg: #0f1330;
+    --bg-tint: #171b3f;
+    --surface: #1a1e46;
+    --ink: #f2efe6;
+    --ink-soft: #b6b9dc;
+    --ink-faint: #82869f;
+    --accent: #ffb03a;
+    --accent-2: #ffa300;
+    --accent-soft: #3a2a12;
+    --line: #2c3160;
+    --warn: #d8b95a;
+    --warn-soft: #362f1c;
     --good: #6bd6a4;
     --good-soft: #1b3327;
     --shadow: 0 0 0 / 0.4;
+    --brand-navy: #5064d6;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #131022;
-  --bg-tint: #1a1630;
-  --surface: #1c1832;
-  --ink: #f3f0ff;
-  --ink-soft: #b6aed9;
-  --ink-faint: #8177a8;
-  --accent: #9c86ff;
-  --accent-2: #b7a6ff;
-  --accent-soft: #2a2350;
-  --line: #2e2850;
-  --warn: #e3ac52;
-  --warn-soft: #362a1c;
+  --bg: #0f1330;
+  --bg-tint: #171b3f;
+  --surface: #1a1e46;
+  --ink: #f2efe6;
+  --ink-soft: #b6b9dc;
+  --ink-faint: #82869f;
+  --accent: #ffb03a;
+  --accent-2: #ffa300;
+  --accent-soft: #3a2a12;
+  --line: #2c3160;
+  --warn: #d8b95a;
+  --warn-soft: #362f1c;
   --good: #6bd6a4;
   --good-soft: #1b3327;
   --shadow: 0 0 0 / 0.4;
+  --brand-navy: #5064d6;
 }
 
 * {
@@ -116,6 +119,18 @@ a {
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.brand .logo-mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+}
+
+.brand .wordmark {
   display: flex;
   align-items: baseline;
   gap: 0.65rem;
