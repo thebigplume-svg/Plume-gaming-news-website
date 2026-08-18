@@ -1,0 +1,15 @@
+{
+  "slug": "welcome-to-plume",
+  "title": "Welcome to Plume",
+  "dek": "A new gaming news feed, kept current by an automated agent that reads the industry's major outlets around the clock.",
+  "body": [
+    "Plume is a gaming news feed built around one idea: the industry moves fast, and a small site shouldn't fall behind it. An automated agent checks in with major gaming outlets on a regular schedule, picks out the stories that matter, and writes an original short summary of each one here.",
+    "Every story on Plume links back to where it came from. The summaries are original writing, not copies of the source article — think of this feed as a fast, readable front door to the coverage already being done by outlets across the industry, not a replacement for it.",
+    "This is the first post on the site. From here, new stories will appear automatically as the agent finds them."
+  ],
+  "category": "News",
+  "tags": ["Plume"],
+  "source_name": "Plume",
+  "source_url": "https://plumegaming.com",
+  "published_at": "2026-08-18T12:00:00Z"
+}

@@ -3,7 +3,6 @@
   "lookback_hours": 30,
   "max_candidates": 20,
   "articles_per_run": 4,
-  "wp_post_status": "draft",
   "default_category": "News",
   "state_file": "state/posted.json",
   "posted_history_limit": 1000,
