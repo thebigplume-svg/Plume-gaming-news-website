@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plume Money</title>
+<meta name="description" content="Personal budget and YouTube channel spending tracker.">
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --surface-2: #eef1f8;
+    --text: #14213d;
+    --muted: #5b6785;
+    --border: #d9dfec;
+    --accent: #f77f00;
+    --accent-text: #ffffff;
+    --navy: #14213d;
+    --good: #1a7f4b;
+    --bad: #c62828;
+    --warn: #b26a00;
+    --bar-bg: #e3e8f2;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1424;
+      --surface: #16203a;
+      --surface-2: #1d2947;
+      --text: #e8ecf6;
+      --muted: #9aa6c4;
+      --border: #2a3758;
+      --navy: #e8ecf6;
+      --good: #4cc38a;
+      --bad: #ff6b6b;
+      --warn: #ffb347;
+      --bar-bg: #26324f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1424;
+    --surface: #16203a;
+    --surface-2: #1d2947;
+    --text: #e8ecf6;
+    --muted: #9aa6c4;
+    --border: #2a3758;
+    --navy: #e8ecf6;
+    --good: #4cc38a;
+    --bad: #ff6b6b;
+    --warn: #ffb347;
+    --bar-bg: #26324f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 5;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 12px 0 8px; flex-wrap: wrap; }
+  .brand { font-weight: 800; font-size: 18px; letter-spacing: -0.01em; }
+  .brand span { color: var(--accent); }
+  .spacer { flex: 1; }
+  nav.tabs { display: flex; gap: 4px; overflow-x: auto; }
+  nav.tabs button {
+    background: none; border: none; color: var(--muted);
+    padding: 10px 14px; font: inherit; font-weight: 600; cursor: pointer;
+    border-bottom: 3px solid transparent; white-space: nowrap;
+  }
+  nav.tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+  main { padding: 20px 0 60px; }
+  section.view { display: none; }
+  section.view.active { display: block; }
+  h2 { font-size: 16px; margin: 0 0 12px; }
+  .grid { display: grid; gap: 16px; }
+  .stats { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 16px; }
+  .two { grid-template-columns: 1fr; }
+  @media (min-width: 860px) { .two { grid-template-columns: 1fr 1fr; } }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; min-width: 0;
+  }
+  .stat .label { color: var(--muted); font-size: 13px; }
+  .stat .value { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .good { color: var(--good); }
+  .bad { color: var(--bad); }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  input, select {
+    width: 100%; padding: 8px 10px; font: inherit; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+  }
+  input[type="checkbox"] { width: auto; }
+  input:focus, select:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .form { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); align-items: end; }
+  .form .wide { grid-column: 1 / -1; }
+  .check { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; margin: 0; }
+  .btn {
+    padding: 9px 14px; font: inherit; font-weight: 600; border-radius: 8px; cursor: pointer;
+    background: var(--accent); color: var(--accent-text); border: 1px solid var(--accent);
+  }
+  .btn.ghost { background: transparent; color: var(--text); border-color: var(--border); }
+  .btn.danger { background: transparent; color: var(--bad); border-color: var(--bad); }
+  .btn.sm { padding: 5px 10px; font-size: 13px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .iconbtn {
+    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 4px 6px; border-radius: 6px;
+  }
+  .iconbtn:hover { color: var(--bad); background: var(--surface-2); }
+  .bars { display: grid; gap: 12px; }
+  .bar-head { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; margin-bottom: 4px; }
+  .bar-head .amt { font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+  .bar { height: 8px; background: var(--bar-bg); border-radius: 99px; overflow: hidden; }
+  .bar > div { height: 100%; background: var(--accent); border-radius: 99px; }
+  .bar > div.over { background: var(--bad); }
+  .bar > div.near { background: var(--warn); }
+  .budget-row { display: grid; grid-template-columns: 1fr 110px; gap: 12px; align-items: center; }
+  .budget-row input { padding: 5px 8px; text-align: right; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; }
+  .pill { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 99px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+  .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { background: var(--surface); color: var(--muted); border: none; padding: 7px 12px; font: inherit; font-weight: 600; cursor: pointer; }
+  .seg button.on { background: var(--accent); color: var(--accent-text); }
+  .toolbar { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin-bottom: 16px; }
+  .toolbar .field { min-width: 160px; }
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: var(--bg); padding: 10px 16px; border-radius: 8px;
+    font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20;
+  }
+  .toast.show { opacity: 1; }
+  .mt { margin-top: 16px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">Plume <span>Money</span></div>
+      <div class="spacer"></div>
+      <div class="field">
+        <input type="month" id="month" aria-label="Month">
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-view="personal" aria-selected="true">Personal Budget</button>
+      <button role="tab" data-view="channel" aria-selected="false">YouTube Channel</button>
+      <button role="tab" data-view="settings" aria-selected="false">Settings &amp; Backup</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- ============ PERSONAL BUDGET ============ -->
+  <section class="view active" id="view-personal">
+    <div class="grid stats">
+      <div class="card stat"><div class="label">Income</div><div class="value" id="p-income">–</div></div>
+      <div class="card stat"><div class="label">Spent</div><div class="value" id="p-spent">–</div></div>
+      <div class="card stat"><div class="label">Left this month</div><div class="value" id="p-left">–</div></div>
+      <div class="card stat"><div class="label">Budget remaining</div><div class="value" id="p-budget-left">–</div></div>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h2>Add transaction</h2>
+        <form id="p-form" class="form">
+          <div>
+            <label for="p-type">Type</label>
+            <select id="p-type"><option value="expense">Expense</option><option value="income">Income</option></select>
+          </div>
+          <div>
+            <label for="p-date">Date</label>
+            <input type="date" id="p-date" required>
+          </div>
+          <div>
+            <label for="p-amount">Amount</label>
+            <input type="number" id="p-amount" min="0.01" step="0.01" inputmode="decimal" required>
+          </div>
+          <div>
+            <label for="p-category">Category</label>
+            <select id="p-category"></select>
+          </div>
+          <div class="wide">
+            <label for="p-note">Note</label>
+            <input type="text" id="p-note" placeholder="e.g. Groceries at Aldi" maxlength="120">
+          </div>
+          <div><button class="btn" type="submit">Add</button></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Monthly budgets <span class="muted small">— set a limit per category</span></h2>
+        <div class="bars" id="p-budgets"></div>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <h2>Transactions this month</h2>
+      <div class="table-wrap"><table id="p-table"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ YOUTUBE CHANNEL ============ -->
+  <section class="view" id="view-channel">
+    <div class="toolbar">
+      <div>
+        <label>Show totals for</label>
+        <div class="seg" id="c-period">
+          <button data-period="month" class="on">Month</button>
+          <button data-period="year">Year to date</button>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="c-export">Export CSV (for taxes)</button>
+    </div>
+
+    <div class="grid stats">
+      <div class="card stat"><div class="label">Channel revenue</div><div class="value" id="c-rev">–</div></div>
+      <div class="card stat"><div class="label">Channel expenses</div><div class="value" id="c-exp">–</div></div>
+      <div class="card stat"><div class="label">Net profit</div><div class="value" id="c-net">–</div></div>
+      <div class="card stat"><div class="label">Tax-deductible spend</div><div class="value" id="c-ded">–</div></div>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h2>Log channel income or expense</h2>
+        <form id="c-form" class="form">
+          <div>
+            <label for="c-type">Type</label>
+            <select id="c-type"><option value="expense">Expense</option><option value="income">Income</option></select>
+          </div>
+          <div>
+            <label for="c-date">Date</label>
+            <input type="date" id="c-date" required>
+          </div>
+          <div>
+            <label for="c-amount">Amount</label>
+            <input type="number" id="c-amount" min="0.01" step="0.01" inputmode="decimal" required>
+          </div>
+          <div>
+            <label for="c-category">Category</label>
+            <select id="c-category"></select>
+          </div>
+          <div>
+            <label for="c-video">Video / project</label>
+            <input type="text" id="c-video" list="c-video-list" placeholder="optional" maxlength="80">
+            <datalist id="c-video-list"></datalist>
+          </div>
+          <div>
+            <label for="c-note">Note</label>
+            <input type="text" id="c-note" placeholder="e.g. Elgato Key Light" maxlength="120">
+          </div>
+          <label class="check wide" id="c-ded-wrap"><input type="checkbox" id="c-deductible" checked> Business / tax-deductible expense</label>
+          <div><button class="btn" type="submit">Add</button></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Expenses by category</h2>
+        <div class="bars" id="c-cats"></div>
+      </div>
+    </div>
+
+    <div class="grid two mt">
+      <div class="card">
+        <h2>Cost &amp; revenue per video</h2>
+        <div class="table-wrap"><table id="c-videos"></table></div>
+      </div>
+
+      <div class="card">
+        <h2>Recurring subscriptions</h2>
+        <p class="muted small" style="margin-top:-6px">Adobe, Epidemic Sound, TubeBuddy, Game Pass… Track them here, then log them into a month with one click.</p>
+        <form id="s-form" class="form">
+          <div><label for="s-name">Name</label><input id="s-name" required maxlength="60" placeholder="Epidemic Sound"></div>
+          <div><label for="s-amount">Amount</label><input id="s-amount" type="number" min="0.01" step="0.01" inputmode="decimal" required></div>
+          <div><label for="s-cycle">Billed</label><select id="s-cycle"><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div>
+          <div><label for="s-category">Category</label><select id="s-category"></select></div>
+          <div><button class="btn" type="submit">Add</button></div>
+        </form>
+        <div class="table-wrap mt"><table id="s-table"></table></div>
+        <div class="row mt">
+          <button class="btn ghost sm" id="s-log">Log monthly subscriptions into selected month</button>
+          <span class="muted small" id="s-total"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <h2 id="c-table-title">Channel transactions</h2>
+      <div class="table-wrap"><table id="c-table"></table></div>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="view" id="view-settings">
+    <div class="grid two">
+      <div class="card">
+        <h2>Preferences</h2>
+        <div class="form">
+          <div>
+            <label for="set-currency">Currency</label>
+            <select id="set-currency">
+              <option>USD</option><option>EUR</option><option>GBP</option><option>CAD</option>
+              <option>AUD</option><option>JPY</option><option>INR</option><option>BRL</option>
+              <option>MXN</option><option>NZD</option><option>CHF</option><option>SEK</option>
+            </select>
+          </div>
+          <div>
+            <label for="set-theme">Theme</label>
+            <select id="set-theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Backup &amp; restore</h2>
+        <p class="muted small">Your data is saved in this browser only. Download a backup regularly, and use it to move your data to another device.</p>
+        <div class="row">
+          <button class="btn" id="backup">Download backup</button>
+          <label class="btn ghost" style="margin:0;color:var(--text)">Restore from file<input type="file" id="restore" accept="application/json,.json" hidden></label>
+          <button class="btn danger" id="reset">Erase all data</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- Defaults ----------
+  const STORAGE_KEY = "plume-money-v1";
+  const DEFAULTS = {
+    personalExpense: ["Housing", "Utilities", "Groceries", "Dining out", "Transport", "Insurance",
+      "Health", "Phone & internet", "Entertainment", "Shopping", "Debt payments", "Savings", "Other"],
+    personalIncome: ["Salary", "Side income", "Gifts", "Refunds", "Other"],
+    channelExpense: ["Equipment & gear", "Software & subscriptions", "Games for content",
+      "Editing & freelancers", "Music & assets", "Thumbnails & design", "Ads & promotion",
+      "Internet & utilities share", "Travel & events", "Other"],
+    channelIncome: ["AdSense", "Sponsorships", "Memberships & Super Chats", "Affiliate links",
+      "Merch", "Donations", "Other"],
+  };
+
+  const blank = () => ({
+    version: 1,
+    settings: { currency: "USD", theme: "system" },
+    personal: { tx: [], budgets: {} },
+    channel: { tx: [], subs: [] },
+  });
+
+  // ---------- Storage ----------
+  let state = blank();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state = normalize(JSON.parse(raw));
+  } catch (e) { /* storage unavailable or corrupt: start fresh */ }
+
+  function normalize(d) {
+    const b = blank();
+    if (!d || typeof d !== "object") return b;
+    return {
+      version: 1,
+      settings: Object.assign(b.settings, d.settings || {}),
+      personal: {
+        tx: Array.isArray(d.personal && d.personal.tx) ? d.personal.tx : [],
+        budgets: (d.personal && typeof d.personal.budgets === "object" && d.personal.budgets) || {},
+      },
+      channel: {
+        tx: Array.isArray(d.channel && d.channel.tx) ? d.channel.tx : [],
+        subs: Array.isArray(d.channel && d.channel.subs) ? d.channel.subs : [],
+      },
+    };
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) { toast("Couldn't save in this browser — download a backup!"); }
+  }
+
+  // ---------- Helpers ----------
+  const $ = (id) => document.getElementById(id);
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const round2 = (n) => Math.round(n * 100) / 100;
+  const sum = (arr) => round2(arr.reduce((a, t) => a + Number(t.amount || 0), 0));
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const pad = (n) => String(n).padStart(2, "0");
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+
+  function money(n) {
+    try {
+      return new Intl.NumberFormat(undefined, { style: "currency", currency: state.settings.currency }).format(n || 0);
+    } catch (e) { return (n || 0).toFixed(2); }
+  }
+  function fmtDate(iso) {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+  function monthLabel(ym) {
+    const [y, m] = ym.split("-").map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  }
+  // Default date for a new entry: today if it's in the selected month, else the 1st.
+  const defaultDate = () => today().startsWith(month()) ? today() : month() + "-01";
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+
+  function fillSelect(sel, options) {
+    const prev = sel.value;
+    sel.innerHTML = options.map((o) => `<option>${esc(o)}</option>`).join("");
+    if (options.includes(prev)) sel.value = prev;
+  }
+
+  function barRow(label, value, max, extraClass) {
+    const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
+    return `<div><div class="bar-head"><span>${esc(label)}</span><span class="amt">${money(value)}</span></div>
+      <div class="bar"><div class="${extraClass || ""}" style="width:${pct.toFixed(1)}%"></div></div></div>`;
+  }
+
+  // ---------- Theme ----------
+  function applyTheme() {
+    const t = state.settings.theme;
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    else document.documentElement.removeAttribute("data-theme");
+  }
+
+  // ---------- Month + tabs ----------
+  const monthInput = $("month");
+  monthInput.value = today().slice(0, 7);
+  const month = () => monthInput.value || today().slice(0, 7);
+  monthInput.addEventListener("change", () => {
+    $("p-date").value = defaultDate();
+    $("c-date").value = defaultDate();
+    render();
+  });
+
+  document.querySelectorAll("nav.tabs button").forEach((b) => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll("nav.tabs button").forEach((x) => x.setAttribute("aria-selected", String(x === b)));
+      document.querySelectorAll("section.view").forEach((v) => v.classList.toggle("active", v.id === "view-" + b.dataset.view));
+      try { localStorage.setItem(STORAGE_KEY + "-tab", b.dataset.view); } catch (e) {}
+    });
+  });
+  try {
+    const savedTab = localStorage.getItem(STORAGE_KEY + "-tab");
+    const btn = savedTab && document.querySelector(`nav.tabs button[data-view="${savedTab}"]`);
+    if (btn) btn.click();
+  } catch (e) {}
+
+  // ================= PERSONAL =================
+  const pType = $("p-type"), pCat = $("p-category");
+  const syncPersonalCats = () => fillSelect(pCat, pType.value === "income" ? DEFAULTS.personalIncome : DEFAULTS.personalExpense);
+  pType.addEventListener("change", syncPersonalCats);
+
+  $("p-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const amount = round2(parseFloat($("p-amount").value));
+    if (!(amount > 0)) return toast("Enter an amount above zero");
+    state.personal.tx.push({
+      id: uid(), type: pType.value, date: $("p-date").value, amount,
+      category: pCat.value, note: $("p-note").value.trim(),
+    });
+    save();
+    $("p-amount").value = ""; $("p-note").value = "";
+    $("p-amount").focus();
+    toast(pType.value === "income" ? "Income added" : "Expense added");
+    render();
+  });
+
+  function renderPersonal() {
+    const m = month();
+    const tx = state.personal.tx.filter((t) => t.date.startsWith(m));
+    const income = sum(tx.filter((t) => t.type === "income"));
+    const expenses = tx.filter((t) => t.type === "expense");
+    const spent = sum(expenses);
+    const left = round2(income - spent);
+
+    $("p-income").textContent = money(income);
+    $("p-spent").textContent = money(spent);
+    $("p-left").textContent = money(left);
+    $("p-left").className = "value " + (left < 0 ? "bad" : left > 0 ? "good" : "");
+
+    // Budgets
+    const budgets = state.personal.budgets;
+    const byCat = {};
+    expenses.forEach((t) => { byCat[t.category] = round2((byCat[t.category] || 0) + t.amount); });
+    const totalBudget = round2(Object.values(budgets).reduce((a, b) => a + (Number(b) || 0), 0));
+    const budgetedSpent = round2(Object.keys(budgets).reduce((a, c) => a + (budgets[c] > 0 ? (byCat[c] || 0) : 0), 0));
+    const bl = $("p-budget-left");
+    if (totalBudget > 0) {
+      const r = round2(totalBudget - budgetedSpent);
+      bl.textContent = money(r);
+      bl.className = "value " + (r < 0 ? "bad" : "good");
+    } else {
+      bl.textContent = "Not set";
+      bl.className = "value muted";
+    }
+
+    const cats = DEFAULTS.personalExpense.slice();
+    Object.keys(byCat).forEach((c) => { if (!cats.includes(c)) cats.push(c); });
+    $("p-budgets").innerHTML = cats.map((c) => {
+      const limit = Number(budgets[c]) || 0;
+      const s = byCat[c] || 0;
+      const ratio = limit > 0 ? s / limit : 0;
+      const cls = limit > 0 ? (ratio > 1 ? "over" : ratio >= 0.85 ? "near" : "") : "";
+      const max = limit > 0 ? limit : Math.max(spent, 1);
+      const pct = Math.min(100, (s / max) * 100);
+      const status = limit > 0
+        ? `${money(s)} of ${money(limit)}${ratio > 1 ? ` · <span class="bad">${money(s - limit)} over</span>` : ""}`
+        : money(s);
+      return `<div class="budget-row">
+        <div><div class="bar-head"><span>${esc(c)}</span><span class="amt">${status}</span></div>
+          <div class="bar"><div class="${cls}" style="width:${pct.toFixed(1)}%"></div></div></div>
+        <input type="number" min="0" step="1" inputmode="decimal" placeholder="Limit" aria-label="Monthly limit for ${esc(c)}"
+          data-budget="${esc(c)}" value="${limit > 0 ? limit : ""}">
+      </div>`;
+    }).join("");
+
+    renderTxTable($("p-table"), tx, false, "personal");
+  }
+
+  $("p-budgets").addEventListener("change", (e) => {
+    const cat = e.target.dataset && e.target.dataset.budget;
+    if (!cat) return;
+    const v = round2(parseFloat(e.target.value));
+    if (v > 0) state.personal.budgets[cat] = v; else delete state.personal.budgets[cat];
+    save(); render();
+  });
+
+  // ================= CHANNEL =================
+  let period = "month";
+  document.querySelectorAll("#c-period button").forEach((b) => b.addEventListener("click", () => {
+    period = b.dataset.period;
+    document.querySelectorAll("#c-period button").forEach((x) => x.classList.toggle("on", x === b));
+    render();
+  }));
+
+  const cType = $("c-type"), cCat = $("c-category");
+  const syncChannelCats = () => {
+    fillSelect(cCat, cType.value === "income" ? DEFAULTS.channelIncome : DEFAULTS.channelExpense);
+    $("c-ded-wrap").style.display = cType.value === "income" ? "none" : "";
+  };
+  cType.addEventListener("change", syncChannelCats);
+  fillSelect($("s-category"), DEFAULTS.channelExpense);
+  $("s-category").value = "Software & subscriptions";
+
+  $("c-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const amount = round2(parseFloat($("c-amount").value));
+    if (!(amount > 0)) return toast("Enter an amount above zero");
+    const isExp = cType.value === "expense";
+    state.channel.tx.push({
+      id: uid(), type: cType.value, date: $("c-date").value, amount,
+      category: cCat.value, video: $("c-video").value.trim(), note: $("c-note").value.trim(),
+      deductible: isExp ? $("c-deductible").checked : false,
+    });
+    save();
+    $("c-amount").value = ""; $("c-note").value = "";
+    $("c-amount").focus();
+    toast(isExp ? "Channel expense added" : "Channel income added");
+    render();
+  });
+
+  $("s-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const amount = round2(parseFloat($("s-amount").value));
+    const name = $("s-name").value.trim();
+    if (!name || !(amount > 0)) return toast("Enter a name and amount");
+    state.channel.subs.push({ id: uid(), name, amount, cycle: $("s-cycle").value, category: $("s-category").value });
+    save();
+    $("s-name").value = ""; $("s-amount").value = "";
+    toast("Subscription added");
+    render();
+  });
+
+  $("s-log").addEventListener("click", () => {
+    const m = month();
+    let added = 0, skipped = 0;
+    state.channel.subs.filter((s) => s.cycle === "monthly").forEach((s) => {
+      const exists = state.channel.tx.some((t) => t.subId === s.id && t.date.startsWith(m));
+      if (exists) { skipped++; return; }
+      state.channel.tx.push({
+        id: uid(), type: "expense", date: m + "-01", amount: s.amount, category: s.category,
+        video: "", note: s.name + " (subscription)", deductible: true, subId: s.id,
+      });
+      added++;
+    });
+    save(); render();
+    if (!state.channel.subs.some((s) => s.cycle === "monthly")) toast("No monthly subscriptions to log");
+    else toast(`Logged ${added} for ${monthLabel(m)}` + (skipped ? ` · ${skipped} already logged` : ""));
+  });
+
+  function channelPeriodTx() {
+    const m = month();
+    if (period === "month") return state.channel.tx.filter((t) => t.date.startsWith(m));
+    const year = m.slice(0, 4);
+    const end = m + "-31"; // year to date, through the end of the selected month
+    return state.channel.tx.filter((t) => t.date.startsWith(year) && t.date <= end);
+  }
+
+  function renderChannel() {
+    const tx = channelPeriodTx();
+    const inc = tx.filter((t) => t.type === "income");
+    const exp = tx.filter((t) => t.type === "expense");
+    const rev = sum(inc), cost = sum(exp), net = round2(rev - cost);
+    $("c-rev").textContent = money(rev);
+    $("c-exp").textContent = money(cost);
+    $("c-net").textContent = money(net);
+    $("c-net").className = "value " + (net < 0 ? "bad" : net > 0 ? "good" : "");
+    $("c-ded").textContent = money(sum(exp.filter((t) => t.deductible)));
+
+    // Category breakdown
+    const byCat = {};
+    exp.forEach((t) => { byCat[t.category] = round2((byCat[t.category] || 0) + t.amount); });
+    const catRows = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+    const maxCat = catRows.length ? catRows[0][1] : 0;
+    $("c-cats").innerHTML = catRows.length
+      ? catRows.map(([c, v]) => barRow(`${c} · ${Math.round((v / cost) * 100)}%`, v, maxCat)).join("")
+      : `<div class="empty">No channel expenses ${period === "month" ? "this month" : "this year"} yet.</div>`;
+
+    // Per-video
+    const vids = {};
+    tx.forEach((t) => {
+      if (!t.video) return;
+      const v = vids[t.video] || (vids[t.video] = { cost: 0, rev: 0 });
+      if (t.type === "expense") v.cost = round2(v.cost + t.amount); else v.rev = round2(v.rev + t.amount);
+    });
+    const vidRows = Object.entries(vids).sort((a, b) => b[1].cost - a[1].cost);
+    $("c-videos").innerHTML = vidRows.length
+      ? `<thead><tr><th>Video / project</th><th class="num">Cost</th><th class="num">Revenue</th><th class="num">Net</th></tr></thead><tbody>` +
+        vidRows.map(([name, v]) => {
+          const n = round2(v.rev - v.cost);
+          return `<tr><td>${esc(name)}</td><td class="num">${money(v.cost)}</td><td class="num">${money(v.rev)}</td>
+            <td class="num ${n < 0 ? "bad" : n > 0 ? "good" : ""}">${money(n)}</td></tr>`;
+        }).join("") + "</tbody>"
+      : `<tbody><tr><td class="empty">Tag entries with a video or project name to see what each one costs.</td></tr></tbody>`;
+
+    // Video name suggestions
+    const names = [...new Set(state.channel.tx.map((t) => t.video).filter(Boolean))].sort();
+    $("c-video-list").innerHTML = names.map((n) => `<option value="${esc(n)}">`).join("");
+
+    // Subscriptions
+    const subs = state.channel.subs;
+    $("s-table").innerHTML = subs.length
+      ? `<thead><tr><th>Name</th><th>Billed</th><th class="num">Amount</th><th class="num">Per month</th><th></th></tr></thead><tbody>` +
+        subs.map((s) => `<tr><td>${esc(s.name)}<div class="muted small">${esc(s.category)}</div></td>
+          <td>${s.cycle === "yearly" ? "Yearly" : "Monthly"}</td><td class="num">${money(s.amount)}</td>
+          <td class="num">${money(s.cycle === "yearly" ? s.amount / 12 : s.amount)}</td>
+          <td class="num"><button class="iconbtn" data-del-sub="${esc(s.id)}" aria-label="Remove ${esc(s.name)}">×</button></td></tr>`).join("") +
+        "</tbody>"
+      : `<tbody><tr><td class="empty">No subscriptions yet.</td></tr></tbody>`;
+    const monthly = round2(subs.reduce((a, s) => a + (s.cycle === "yearly" ? s.amount / 12 : s.amount), 0));
+    $("s-total").textContent = subs.length ? `≈ ${money(monthly)}/month · ${money(monthly * 12)}/year` : "";
+
+    $("c-table-title").textContent = `Channel transactions — ${period === "month" ? monthLabel(month()) : month().slice(0, 4) + " to date"}`;
+    renderTxTable($("c-table"), tx, true, "channel");
+  }
+
+  $("s-table").addEventListener("click", (e) => {
+    const id = e.target.dataset && e.target.dataset.delSub;
+    if (!id) return;
+    const s = state.channel.subs.find((x) => x.id === id);
+    if (!s || !confirm(`Remove the "${s.name}" subscription? Already-logged expenses stay.`)) return;
+    state.channel.subs = state.channel.subs.filter((x) => x.id !== id);
+    save(); render();
+  });
+
+  // ---------- Shared transaction table ----------
+  function renderTxTable(table, tx, channel, scope) {
+    if (!tx.length) {
+      table.innerHTML = `<tbody><tr><td class="empty">Nothing logged for this period yet.</td></tr></tbody>`;
+      return;
+    }
+    const rows = tx.slice().sort((a, b) => b.date.localeCompare(a.date) || 0);
+    table.innerHTML = `<thead><tr><th>Date</th><th>Category</th>${channel ? "<th>Video</th>" : ""}<th>Note</th><th class="num">Amount</th><th></th></tr></thead><tbody>` +
+      rows.map((t) => `<tr>
+        <td>${fmtDate(t.date)}</td>
+        <td>${esc(t.category)}${channel && t.type === "expense" && t.deductible ? ' <span class="pill">deductible</span>' : ""}</td>
+        ${channel ? `<td>${esc(t.video) || '<span class="muted">—</span>'}</td>` : ""}
+        <td>${esc(t.note) || '<span class="muted">—</span>'}</td>
+        <td class="num ${t.type === "income" ? "good" : ""}">${t.type === "income" ? "+" : "−"}${money(t.amount)}</td>
+        <td class="num"><button class="iconbtn" data-del="${esc(t.id)}" data-scope="${scope}" aria-label="Delete">×</button></td>
+      </tr>`).join("") + "</tbody>";
+  }
+
+  document.addEventListener("click", (e) => {
+    const id = e.target.dataset && e.target.dataset.del;
+    if (!id) return;
+    const scope = e.target.dataset.scope;
+    if (!confirm("Delete this transaction?")) return;
+    state[scope].tx = state[scope].tx.filter((t) => t.id !== id);
+    save(); render();
+  });
+
+  // ---------- CSV export ----------
+  $("c-export").addEventListener("click", () => {
+    const tx = channelPeriodTx().slice().sort((a, b) => a.date.localeCompare(b.date));
+    if (!tx.length) return toast("Nothing to export for this period");
+    const q = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+    const lines = [["Date", "Type", "Category", "Video/Project", "Note", "Amount", "Currency", "Tax deductible"].map(q).join(",")];
+    tx.forEach((t) => lines.push([t.date, t.type, t.category, t.video, t.note,
+      (t.type === "income" ? t.amount : -t.amount).toFixed(2), state.settings.currency,
+      t.type === "expense" ? (t.deductible ? "yes" : "no") : ""].map(q).join(",")));
+    const tag = period === "month" ? month() : month().slice(0, 4) + "-ytd";
+    download(`youtube-channel-${tag}.csv`, lines.join("\r\n"), "text/csv");
+  });
+
+  function download(name, text, type) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type }));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // ================= SETTINGS =================
+  $("set-currency").value = state.settings.currency;
+  $("set-theme").value = state.settings.theme;
+  $("set-currency").addEventListener("change", (e) => { state.settings.currency = e.target.value; save(); render(); });
+  $("set-theme").addEventListener("change", (e) => { state.settings.theme = e.target.value; save(); applyTheme(); });
+
+  $("backup").addEventListener("click", () => {
+    download(`plume-money-backup-${today()}.json`, JSON.stringify(state, null, 2), "application/json");
+  });
+  $("restore").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    file.text().then((txt) => {
+      const data = normalize(JSON.parse(txt));
+      if (!confirm(`Replace current data with this backup? (${data.personal.tx.length} personal and ${data.channel.tx.length} channel entries)`)) return;
+      state = data; save(); applyTheme();
+      $("set-currency").value = state.settings.currency;
+      $("set-theme").value = state.settings.theme;
+      render(); toast("Backup restored");
+    }).catch(() => toast("That file isn't a valid backup")).finally(() => { e.target.value = ""; });
+  });
+  $("reset").addEventListener("click", () => {
+    if (!confirm("Erase ALL budget and channel data in this browser? Download a backup first if you want to keep it.")) return;
+    state = blank(); save(); applyTheme(); render(); toast("All data erased");
+  });
+
+  // ---------- Boot ----------
+  function render() { renderPersonal(); renderChannel(); }
+  applyTheme();
+  syncPersonalCats();
+  syncChannelCats();
+  $("p-date").value = defaultDate();
+  $("c-date").value = defaultDate();
+  render();
+})();
+</script>
+</body>
+</html>
