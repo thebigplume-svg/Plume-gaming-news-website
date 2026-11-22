@@ -59,3 +59,35 @@ highlighted. Short punchy headlines (3–6 words) come out biggest.
 ## Customising
 
 Colours, logo, text zone, saturation etc. live in `thumbnails/config.json`.
+
+## Straight from OpusClip
+
+If your Shorts come from [OpusClip](https://www.opus.pro), the tool can pull
+the clips for you and use OpusClip's own clip titles as the headlines.
+
+1. Get your API key from the OpusClip dashboard (bottom-left corner). API
+   access needs an OpusClip Pro, Max or Business plan.
+2. Give the tool the key — either:
+   ```bash
+   export OPUSCLIP_API_KEY=your_key
+   ```
+   or create `thumbnails/.env` containing `OPUSCLIP_API_KEY=your_key`
+   (`.env` is git-ignored, so the key never gets committed).
+3. Run it with one or more project IDs **or** just paste the project URL
+   from your browser:
+   ```bash
+   python3 thumbnails/opusclip_thumbnails.py "https://clip.opus.pro/clip/?id=AbC123" --badge NEW
+   ```
+
+You get:
+
+```
+opusclip/<project id>/01-this-boss-is-impossible.mp4
+opusclip/<project id>/thumbnails/01-this-boss-is-impossible.jpg
+opusclip/<project id>/titles.json
+```
+
+Don't like a headline? Edit it (or add a `"badge"`) in `titles.json` and
+re-run with `--force` — your edits are kept, and clips already downloaded
+aren't downloaded again. OpusClip deletes projects after 30 days, so run it
+before then.
