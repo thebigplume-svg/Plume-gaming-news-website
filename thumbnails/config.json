@@ -1,0 +1,17 @@
+{
+  "_comment": "Look & feel for make_thumbnails.py. Delete a key to fall back to the built-in default.",
+  "accent": "#F5A300",
+  "text": "#FFFFFF",
+  "stroke": "#0B1240",
+  "shade": "#22318F",
+  "badge_bg": "#E8202A",
+  "badge_text": "#FFFFFF",
+  "show_logo": true,
+  "logo": "assets/logo.png",
+  "text_top": 0.19,
+  "text_bottom": 0.56,
+  "max_lines": 3,
+  "saturation": 1.35,
+  "contrast": 1.18,
+  "samples": 24
+}
