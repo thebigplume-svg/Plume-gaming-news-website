@@ -131,6 +131,8 @@ def slug(text: str, fallback: str) -> str:
 
 
 def download(url: str, dest: Path) -> None:
+    if urllib.parse.urlparse(url).scheme not in ("https", "http"):
+        raise ValueError(f"refusing non-web download link: {url[:80]}")
     tmp = dest.with_suffix(dest.suffix + ".part")
     req = urllib.request.Request(url, headers={"User-Agent": "plume-thumbnails/1.0"})
     with urllib.request.urlopen(req, timeout=300) as r, open(tmp, "wb") as f:
@@ -140,7 +142,10 @@ def download(url: str, dest: Path) -> None:
 
 
 def sync_project(pid: str, key: str, root: Path, badge: str | None) -> Path:
-    folder = root / pid
+    safe = re.sub(r"[^A-Za-z0-9_-]", "", pid)
+    if not safe:
+        raise SystemExit(f"invalid project ID: {pid!r}")
+    folder = root / safe
     folder.mkdir(parents=True, exist_ok=True)
     titles_path = folder / "titles.json"
     titles = json.loads(titles_path.read_text()) if titles_path.exists() else {}
